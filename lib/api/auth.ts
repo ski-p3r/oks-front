@@ -17,6 +17,8 @@ export const login = async (data: { email: string; password: string }) => {
   }
 
   const result = await res.json();
+  console.log("Login result:", result);
+
   const cookie = await cookies();
   cookie.set("oks_access", result.access);
   cookie.set("oks_refresh", result.access);
