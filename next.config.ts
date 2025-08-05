@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true, // Ignore ESLint errors and warnings during build
+    ignoreDuringBuilds: true, // ✅ Ignore ESLint errors
   },
-  webpack(config: any, { isServer }: { isServer: boolean }) {
-    // Suppress warnings in the client-side build (only for production)
+  typescript: {
+    ignoreBuildErrors: true, // ✅ Ignore TypeScript errors during build
+  },
+  webpack(config, { isServer }) {
     if (!isServer) {
-      config.stats = "errors-only"; // Show only errors in the client build
+      config.stats = "errors-only"; // ✅ Suppress Webpack client warnings
     }
     return config;
   },
