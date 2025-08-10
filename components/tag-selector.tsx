@@ -45,6 +45,8 @@ export default function TagSelector({
     const fetchTags = async () => {
       setIsLoading(true);
       setError(null);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds
       try {
         const query = searchQuery ? `?search=${searchQuery}` : "";
         const url = `${API_BASE_URL}/stories/tags${query}`;
@@ -54,7 +56,9 @@ export default function TagSelector({
           headers: {
             "Content-Type": "application/json",
           },
+          signal: controller.signal,
         });
+        clearTimeout(timeoutId);
         if (!response.ok) {
           const errorText = await response.text();
           console.error(
@@ -71,13 +75,22 @@ export default function TagSelector({
         console.log("Fetched tags:", data.results);
         setAvailableTags(data.results || []);
       } catch (error: any) {
-        console.error("Error fetching tags:", error.message);
-        setError(
-          "Unable to load tags. Please try again later or contact support."
-        );
+        if (error.name === "AbortError") {
+          console.error("Fetch tags request timed out after 30 seconds.");
+          setError("Request timed out. Please try again later.");
+          toast.error("Tag fetch timed out. Try again.");
+        } else {
+          console.error("Error fetching tags:", error.message);
+          setError(
+            "Unable to load tags. Please try again later or contact support."
+          );
+          toast.error(
+            "Failed to load tags. You can still submit without tags."
+          );
+        }
         setAvailableTags([]);
-        toast.error("Failed to load tags. You can still submit without tags.");
       } finally {
+        clearTimeout(timeoutId);
         setIsLoading(false);
       }
     };
