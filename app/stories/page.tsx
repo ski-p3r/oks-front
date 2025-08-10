@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -355,410 +356,414 @@ export default function StoriesPage() {
   const totalPages = Math.ceil(totalCount / 10);
 
   return (
-    <main className="flex-grow min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-16 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#22AA86]/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#22AA86]/5 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <main className="flex-grow min-h-screen">
+        {/* Hero Section */}
+        <section className="relative py-16 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#22AA86]/5 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#22AA86]/5 rounded-full -ml-32 -mb-32 blur-3xl"></div>
 
-        <div className="container mx-auto relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-block mb-6">
-              <div className="flex items-center justify-center">
-                <div className="h-1 w-6 bg-[#22AA86] rounded-full mr-2" />
-                <span className="text-[#22AA86] font-medium text-sm tracking-wider">
-                  COMMUNITY STORIES
-                </span>
-                <div className="h-1 w-6 bg-[#22AA86] rounded-full ml-2"></div>
-              </div>
-            </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Stories from{" "}
-              <span className="text-[#22AA86]">Kidney Warriors</span>
-            </h1>
-
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Real experiences shared by patients and caregivers to inspire,
-              educate, and connect our community.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/stories/share">
-                <Button
-                  size="lg"
-                  className="bg-[#22AA86] hover:bg-[#1c8f70] rounded-xl px-8"
-                >
-                  Share Your Story
-                </Button>
-              </Link>
-              <form
-                className="relative flex-1 max-w-xs mx-auto sm:mx-0"
-                onSubmit={handleSearch}
-              >
-                <Input
-                  type="text"
-                  placeholder="Search stories..."
-                  className="pl-4 pr-12 py-5 rounded-xl"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Button
-                  type="submit"
-                  className="absolute right-1 top-1 bottom-1 bg-[#22AA86] hover:bg-[#1c8f70] rounded-lg"
-                >
-                  <Search className="h-6 w-6" />
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stories Content Section */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto">
-          {/* Filter and Sort Options */}
-          <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant={!selectedRole ? "default" : "outline"}
-                className={
-                  !selectedRole
-                    ? "bg-[#22AA86] text-white"
-                    : "hover:bg-[#22AA86] hover:text-white"
-                }
-                onClick={() => handleRoleFilter("")}
-              >
-                All Stories
-              </Badge>
-              <Badge
-                variant={selectedRole === "PATIENT" ? "default" : "outline"}
-                className={
-                  selectedRole === "PATIENT"
-                    ? "bg-[#22AA86] text-white"
-                    : "hover:bg-[#22AA86] hover:text-white"
-                }
-                onClick={() => handleRoleFilter("PATIENT")}
-              >
-                Patient Stories
-              </Badge>
-              <Badge
-                variant={selectedRole === "CAREGIVER" ? "default" : "outline"}
-                className={
-                  selectedRole === "CAREGIVER"
-                    ? "bg-[#22AA86] text-white"
-                    : "hover:bg-[#22AA86] hover:text-white"
-                }
-                onClick={() => handleRoleFilter("CAREGIVER")}
-              >
-                Caregiver Stories
-              </Badge>
-              <Badge
-                variant={sortOrder === "-like_count" ? "default" : "outline"}
-                className={
-                  sortOrder === "-like_count"
-                    ? "bg-[#22AA86] text-white"
-                    : "hover:bg-[#22AA86] hover:text-white"
-                }
-                onClick={() => setSortOrder("-like_count")}
-              >
-                Most Popular
-              </Badge>
-
-              {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Clear Filters
-                </Button>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Sort by:</span>
-              <select
-                className="text-sm border rounded-md px-2 py-1 bg-background"
-                value={sortOrder}
-                onChange={handleSortChange}
-              >
-                <option value="-created_at">Most Recent</option>
-                <option value="-like_count">Most Popular</option>
-                <option value="-comment_count">Most Commented</option>
-                <option value="-views">Most Viewed</option>
-                <option value="created_at">Oldest First</option>
-              </select>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="flex flex-col items-center">
-                <Loader2 className="h-10 w-10 animate-spin text-[#22AA86]" />
-                <p className="mt-4 text-muted-foreground">Loading stories...</p>
-              </div>
-            </div>
-          ) : stories.length === 0 ? (
-            <>
-              <div className="text-center py-20">
-                <h3 className="text-2xl font-bold mb-4">No stories found</h3>
-                <p className="text-muted-foreground mb-8">
-                  Try adjusting your search or filters
-                </p>
-                <Button
-                  onClick={clearFilters}
-                  className="bg-[#22AA86] hover:bg-[#1c8f70]"
-                >
-                  Clear All Filters
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Tags Section */}
-              <div className="mt-12 bg-muted/30 dark:bg-muted/10 rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4">
-                  Browse Stories by Tag
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant={selectedTag === tag ? "default" : "outline"}
-                      className={`cursor-pointer ${
-                        selectedTag === tag
-                          ? "bg-[#22AA86] text-white"
-                          : "hover:bg-[#22AA86] hover:text-white"
-                      }`}
-                      onClick={() => handleTagClick(tag)}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
+          <div className="container mx-auto relative z-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="inline-block mb-6">
+                <div className="flex items-center justify-center">
+                  <div className="h-1 w-6 bg-[#22AA86] rounded-full mr-2" />
+                  <span className="text-[#22AA86] font-medium text-sm tracking-wider">
+                    COMMUNITY STORIES
+                  </span>
+                  <div className="h-1 w-6 bg-[#22AA86] rounded-full ml-2"></div>
                 </div>
               </div>
 
-              {/* Stories Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {stories.map((story) => (
-                  <div
-                    key={story.id}
-                    className="bg-muted/30 dark:bg-muted/10 rounded-xl overflow-hidden group"
-                  >
-                    <div className="relative aspect-video overflow-hidden">
-                      <img
-                        src={story.image_url || "/placeholder.svg"}
-                        alt={story.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                        {story.tags.slice(0, 2).map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            className="bg-[#22AA86]/90 text-white backdrop-blur-sm cursor-pointer"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleTagClick(tag.name);
-                            }}
-                          >
-                            {tag.name}
-                          </Badge>
-                        ))}
-                        {story.tags.length > 2 && (
-                          <Badge className="bg-black/50 text-white backdrop-blur-sm">
-                            +{story.tags.length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-[#22AA86] transition-colors line-clamp-2">
-                        {story.title}
-                      </h3>
-                      <div className="text-muted-foreground mb-4 line-clamp-2">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                          components={components}
-                        >
-                          {getExcerpt(story.body)}
-                        </ReactMarkdown>
-                      </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                Stories from{" "}
+                <span className="text-[#22AA86]">Kidney Warriors</span>
+              </h1>
 
-                      <div className="flex items-center gap-3 mb-4">
-                        <Avatar className="h-8 w-8 border-2 border-[#22AA86]/20">
-                          <AvatarImage
-                            src={story.user.avatar_url || "/placeholder.svg"}
-                            alt={`${story.user.first_name} ${story.user.last_name}`}
-                          />
-                          <AvatarFallback className="bg-[#22AA86]/10 text-[#22AA86]">
-                            {story.user.first_name[0]}
-                            {story.user.last_name[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="text-sm font-medium">
-                            {story.user.first_name} {story.user.last_name}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {story.user.role}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 text-muted-foreground text-xs">
-                          <div className="flex items-center gap-1">
-                            <Heart
-                              className={`h-3 w-3 ${
-                                story.is_liked
-                                  ? "fill-red-500 text-red-500"
-                                  : ""
-                              }`}
-                            />
-                            <span>{story.like_count}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <MessageSquare className="h-3 w-3" />
-                            <span>{story.comment_count}</span>
-                          </div>
-                        </div>
-                        <Link href={`/stories/${story.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#22AA86] hover:text-[#1c8f70] p-0"
-                          >
-                            Read More
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {stories.length > 0 && (
-                <Pagination className="mt-12">
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage > 1) setCurrentPage(currentPage - 1);
-                        }}
-                        className={
-                          currentPage === 1
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        }
-                      />
-                    </PaginationItem>
-
-                    {[...Array(totalPages)].map((_, i) => {
-                      const page = i + 1;
-                      // Show first page, last page, and pages around current page
-                      if (
-                        page === 1 ||
-                        page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setCurrentPage(page);
-                              }}
-                              isActive={page === currentPage}
-                              className={
-                                page === currentPage
-                                  ? "bg-[#22AA86] text-white hover:bg-[#1c8f70]"
-                                  : ""
-                              }
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      }
-
-                      // Show ellipsis for gaps
-                      if (
-                        (page === 2 && currentPage > 3) ||
-                        (page === totalPages - 1 &&
-                          currentPage < totalPages - 2)
-                      ) {
-                        return (
-                          <PaginationItem key={page}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        );
-                      }
-
-                      return null;
-                    })}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage < totalPages)
-                            setCurrentPage(currentPage + 1);
-                        }}
-                        className={
-                          currentPage === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        }
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-muted/30 dark:bg-muted/10">
-        <div className="container mx-auto">
-          <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#22AA86] to-[#1a8a6c] rounded-3xl p-12 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
-
-            <div className="relative z-10 text-center">
-              <h2 className="text-3xl font-bold mb-4">
-                Ready to Share Your Journey?
-              </h2>
-              <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                Your story matters. Share your kidney health journey to inspire
-                others and connect with a community who understands.
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Real experiences shared by patients and caregivers to inspire,
+                educate, and connect our community.
               </p>
-              <Link href="/stories/share">
-                <Button
-                  size="lg"
-                  className="bg-white text-[#22AA86] hover:bg-white/90 rounded-xl px-8"
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/stories/share">
+                  <Button
+                    size="lg"
+                    className="bg-[#22AA86] hover:bg-[#1c8f70] rounded-xl px-8"
+                  >
+                    Share Your Story
+                  </Button>
+                </Link>
+                <form
+                  className="relative flex-1 max-w-xs mx-auto sm:mx-0"
+                  onSubmit={handleSearch}
                 >
-                  Share Your Story
-                </Button>
-              </Link>
+                  <Input
+                    type="text"
+                    placeholder="Search stories..."
+                    className="pl-4 pr-12 py-5 rounded-xl"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    className="absolute right-1 top-1 bottom-1 bg-[#22AA86] hover:bg-[#1c8f70] rounded-lg"
+                  >
+                    <Search className="h-6 w-6" />
+                  </Button>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Final Thoughts Section */}
-      {/* <section className="py-16 bg-background">
+        {/* Stories Content Section */}
+        <section className="py-12 bg-background">
+          <div className="container mx-auto">
+            {/* Filter and Sort Options */}
+            <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
+              <div className="flex flex-wrap gap-2">
+                <Badge
+                  variant={!selectedRole ? "default" : "outline"}
+                  className={
+                    !selectedRole
+                      ? "bg-[#22AA86] text-white"
+                      : "hover:bg-[#22AA86] hover:text-white"
+                  }
+                  onClick={() => handleRoleFilter("")}
+                >
+                  All Stories
+                </Badge>
+                <Badge
+                  variant={selectedRole === "PATIENT" ? "default" : "outline"}
+                  className={
+                    selectedRole === "PATIENT"
+                      ? "bg-[#22AA86] text-white"
+                      : "hover:bg-[#22AA86] hover:text-white"
+                  }
+                  onClick={() => handleRoleFilter("PATIENT")}
+                >
+                  Patient Stories
+                </Badge>
+                <Badge
+                  variant={selectedRole === "CAREGIVER" ? "default" : "outline"}
+                  className={
+                    selectedRole === "CAREGIVER"
+                      ? "bg-[#22AA86] text-white"
+                      : "hover:bg-[#22AA86] hover:text-white"
+                  }
+                  onClick={() => handleRoleFilter("CAREGIVER")}
+                >
+                  Caregiver Stories
+                </Badge>
+                <Badge
+                  variant={sortOrder === "-like_count" ? "default" : "outline"}
+                  className={
+                    sortOrder === "-like_count"
+                      ? "bg-[#22AA86] text-white"
+                      : "hover:bg-[#22AA86] hover:text-white"
+                  }
+                  onClick={() => setSortOrder("-like_count")}
+                >
+                  Most Popular
+                </Badge>
+
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <select
+                  className="text-sm border rounded-md px-2 py-1 bg-background"
+                  value={sortOrder}
+                  onChange={handleSortChange}
+                >
+                  <option value="-created_at">Most Recent</option>
+                  <option value="-like_count">Most Popular</option>
+                  <option value="-comment_count">Most Commented</option>
+                  <option value="-views">Most Viewed</option>
+                  <option value="created_at">Oldest First</option>
+                </select>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="flex flex-col items-center">
+                  <Loader2 className="h-10 w-10 animate-spin text-[#22AA86]" />
+                  <p className="mt-4 text-muted-foreground">
+                    Loading stories...
+                  </p>
+                </div>
+              </div>
+            ) : stories.length === 0 ? (
+              <>
+                <div className="text-center py-20">
+                  <h3 className="text-2xl font-bold mb-4">No stories found</h3>
+                  <p className="text-muted-foreground mb-8">
+                    Try adjusting your search or filters
+                  </p>
+                  <Button
+                    onClick={clearFilters}
+                    className="bg-[#22AA86] hover:bg-[#1c8f70]"
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Tags Section */}
+                <div className="mt-12 bg-muted/30 dark:bg-muted/10 rounded-xl p-6">
+                  <h3 className="text-xl font-bold mb-4">
+                    Browse Stories by Tag
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {allTags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant={selectedTag === tag ? "default" : "outline"}
+                        className={`cursor-pointer ${
+                          selectedTag === tag
+                            ? "bg-[#22AA86] text-white"
+                            : "hover:bg-[#22AA86] hover:text-white"
+                        }`}
+                        onClick={() => handleTagClick(tag)}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stories Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {stories.map((story) => (
+                    <div
+                      key={story.id}
+                      className="bg-muted/30 dark:bg-muted/10 rounded-xl overflow-hidden group"
+                    >
+                      <div className="relative aspect-video overflow-hidden">
+                        <img
+                          src={story.image_url || "/placeholder.svg"}
+                          alt={story.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+                          {story.tags.slice(0, 2).map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              className="bg-[#22AA86]/90 text-white backdrop-blur-sm cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleTagClick(tag.name);
+                              }}
+                            >
+                              {tag.name}
+                            </Badge>
+                          ))}
+                          {story.tags.length > 2 && (
+                            <Badge className="bg-black/50 text-white backdrop-blur-sm">
+                              +{story.tags.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold mb-3 group-hover:text-[#22AA86] transition-colors line-clamp-2">
+                          {story.title}
+                        </h3>
+                        <div className="text-muted-foreground mb-4 line-clamp-2">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                            components={components}
+                          >
+                            {getExcerpt(story.body)}
+                          </ReactMarkdown>
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-4">
+                          <Avatar className="h-8 w-8 border-2 border-[#22AA86]/20">
+                            <AvatarImage
+                              src={story.user.avatar_url || "/placeholder.svg"}
+                              alt={`${story.user.first_name} ${story.user.last_name}`}
+                            />
+                            <AvatarFallback className="bg-[#22AA86]/10 text-[#22AA86]">
+                              {story.user.first_name[0]}
+                              {story.user.last_name[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-sm font-medium">
+                              {story.user.first_name} {story.user.last_name}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {story.user.role}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 text-muted-foreground text-xs">
+                            <div className="flex items-center gap-1">
+                              <Heart
+                                className={`h-3 w-3 ${
+                                  story.is_liked
+                                    ? "fill-red-500 text-red-500"
+                                    : ""
+                                }`}
+                              />
+                              <span>{story.like_count}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              <span>{story.comment_count}</span>
+                            </div>
+                          </div>
+                          <Link href={`/stories/${story.id}`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-[#22AA86] hover:text-[#1c8f70] p-0"
+                            >
+                              Read More
+                              <ArrowRight className="ml-1 h-3 w-3" />
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {stories.length > 0 && (
+                  <Pagination className="mt-12">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage > 1)
+                              setCurrentPage(currentPage - 1);
+                          }}
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
+                        />
+                      </PaginationItem>
+
+                      {[...Array(totalPages)].map((_, i) => {
+                        const page = i + 1;
+                        // Show first page, last page, and pages around current page
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(page);
+                                }}
+                                isActive={page === currentPage}
+                                className={
+                                  page === currentPage
+                                    ? "bg-[#22AA86] text-white hover:bg-[#1c8f70]"
+                                    : ""
+                                }
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+
+                        // Show ellipsis for gaps
+                        if (
+                          (page === 2 && currentPage > 3) ||
+                          (page === totalPages - 1 &&
+                            currentPage < totalPages - 2)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+
+                        return null;
+                      })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage < totalPages)
+                              setCurrentPage(currentPage + 1);
+                          }}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-muted/30 dark:bg-muted/10">
+          <div className="container mx-auto">
+            <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#22AA86] to-[#1a8a6c] rounded-3xl p-12 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+
+              <div className="relative z-10 text-center">
+                <h2 className="text-3xl font-bold mb-4">
+                  Ready to Share Your Journey?
+                </h2>
+                <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
+                  Your story matters. Share your kidney health journey to
+                  inspire others and connect with a community who understands.
+                </p>
+                <Link href="/stories/share">
+                  <Button
+                    size="lg"
+                    className="bg-white text-[#22AA86] hover:bg-white/90 rounded-xl px-8"
+                  >
+                    Share Your Story
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Final Thoughts Section */}
+        {/* <section className="py-16 bg-background">
         <div className="container mx-auto max-w-4xl">
           <div className="bg-muted/30 dark:bg-muted/10 rounded-xl p-8">
             <ReactMarkdown>
@@ -776,6 +781,7 @@ Let me know if you want:
           </div>
         </div>
       </section> */}
-    </main>
+      </main>
+    </Suspense>
   );
 }
