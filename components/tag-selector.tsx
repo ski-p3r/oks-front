@@ -47,7 +47,7 @@ export default function TagSelector({
       setError(null);
       try {
         const query = searchQuery ? `?search=${searchQuery}` : "";
-        const url = `${API_BASE_URL}/stories/tags/${query}`;
+        const url = `${API_BASE_URL}/stories/tags${query}`;
         console.log("Fetching tags from:", url);
         const response = await fetch(url, {
           method: "GET",
