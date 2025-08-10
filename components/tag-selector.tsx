@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { API_BASE_URL } from "@/lib/axios";
+import { toast } from "sonner";
 
 interface TagType {
   id: number;
@@ -38,28 +39,44 @@ export default function TagSelector({
   const [isLoading, setIsLoading] = useState(false);
   const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTags = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const query = searchQuery ? `?search=${searchQuery}` : "";
         const url = `${API_BASE_URL}/stories/tags/${query}`;
-        console.log("Fetching tags from:", url); // Log the URL
-        const response = await fetch(url);
+        console.log("Fetching tags from:", url);
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("Fetch tags failed:", response.status, errorText);
+          console.error(
+            "Fetch tags failed:",
+            response.status,
+            response.statusText,
+            errorText
+          );
           throw new Error(
-            `Failed to fetch tags: ${response.status} ${errorText}`
+            `Failed to fetch tags: ${response.status} ${response.statusText}`
           );
         }
         const data = await response.json();
         console.log("Fetched tags:", data.results);
         setAvailableTags(data.results || []);
-      } catch (error) {
-        console.error("Error fetching tags:", error);
+      } catch (error: any) {
+        console.error("Error fetching tags:", error.message);
+        setError(
+          "Unable to load tags. Please try again later or contact support."
+        );
         setAvailableTags([]);
+        toast.error("Failed to load tags. You can still submit without tags.");
       } finally {
         setIsLoading(false);
       }
@@ -110,48 +127,46 @@ export default function TagSelector({
               onValueChange={handleSearchInputChange}
               className="tag-search-input"
             />
-            {isLoading ? (
-              <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  Loading tags...
-                </span>
-              </div>
-            ) : availableTags.length === 0 ? (
-              <div className="p-4 text-sm text-muted-foreground">
-                {searchQuery
-                  ? "No tags found for your search."
-                  : "Unable to load tags. Please try again later or contact support."}
-              </div>
-            ) : (
-              <>
-                <CommandEmpty>
-                  {searchQuery
-                    ? "No tags found. Try a different search."
-                    : "No tags available."}
-                </CommandEmpty>
-                <CommandGroup className="max-h-64 overflow-y-auto">
-                  {availableTags.map((tag) => (
-                    <CommandItem
-                      key={tag.id}
-                      value={tag.name}
-                      onSelect={() => handleSelect(tag.name)}
-                      className="tag-item"
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedTags.includes(tag.name)
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {tag.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
+            <CommandList>
+              {isLoading ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    Loading tags...
+                  </span>
+                </div>
+              ) : error ? (
+                <div className="p-4 text-sm text-destructive">{error}</div>
+              ) : (
+                <>
+                  <CommandEmpty>
+                    {searchQuery
+                      ? "No tags found for your search."
+                      : "No tags available."}
+                  </CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-y-auto">
+                    {availableTags.map((tag) => (
+                      <CommandItem
+                        key={tag.id}
+                        value={tag.name}
+                        onSelect={() => handleSelect(tag.name)}
+                        className="tag-item"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedTags.includes(tag.name)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {tag.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
