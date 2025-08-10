@@ -10,7 +10,7 @@ export const API_BASE_URL =
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // 10 seconds
+  timeout: 30000, // 30 seconds
   withCredentials: true, // Optional: include if you're dealing with cookies
 });
 
