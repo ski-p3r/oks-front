@@ -6,7 +6,7 @@ import axios, {
 } from "axios";
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://3.94.123.81:8000/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://34.239.185.74:8000/api";
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
