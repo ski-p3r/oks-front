@@ -1,11 +1,15 @@
 version: "3.8"
+
 services:
   oks-frontend:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NODE_OPTIONS: "--max-old-space-size=2048"
     container_name: oks-frontend
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
+    restart: always
